@@ -45,6 +45,12 @@
 
 // Encoder knob
 //-------------
+/*
+ * If you have a ESP32-WROVER with psram, look at the following link :
+ * https://docs.espressif.com/projects/esp-idf/en/latest/api-guides/external-ram.html
+ * GPIO_NUM_16 and GPIO_NUM_17 are used for PSRAM. Don't use for your knob
+ * And the green led on the board is connected to GPIO_NUM_5 with inverted polarity.
+ * */
 #define PIN_ENC0_A   GPIO_NUM_16	//16	// 255 if encoder not used
 #define PIN_ENC0_B   GPIO_NUM_17	//17	// DT
 #define PIN_ENC0_BTN GPIO_NUM_5		//5// SW
