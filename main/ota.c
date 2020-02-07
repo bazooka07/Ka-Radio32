@@ -36,6 +36,7 @@
 // #include "nvs_flash.h"
 #include "string.h"
 #include "app_main.h"
+#include "webclient.h"
 #include "websocket.h"
 
 static const char *TAG = "OTA";
@@ -92,7 +93,7 @@ void otaTask(void *pvParams) {
 
 	char upgrade_url[128];
 	sprintf(
-		&upgrade_url,
+		upgrade_url,
 		"https://raw.githubusercontent.com/%s/%s/%s/build/%s.bin",
 		CONFIG_OTA_FIRMWARE_ACCOUNT,
 		CONFIG_OTA_FIRMWARE_REPOSITORY,
@@ -242,19 +243,18 @@ void otaTask(void *pvParams) {
 			}
 
 		    ESP_LOGI(TAG, "Prepare to restart system!");
-			kprintf("Update firmware succeded. Restarting\n");
+			// kprintf("Update firmware succeded. Restarting\n");
 			vTaskDelay(10);
 		    esp_restart();
 
 			break;
 		}
 	}
-
+#else
+	ESP_LOGE(TAG, "CONFIG_OTA_FIRMWARE_ACCOUNT not set. Check config !!");
+#endif
 	taskState = false;
 	(void)vTaskDelete( NULL );
-#else
-	ESP_LOGE(TAG, "CONFIG_OTA_FIRMWARE_UPGRADE_URL not set. Check config !!");
-#endif
 }
 
 void update_firmware(char* fname) {
