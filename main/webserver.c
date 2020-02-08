@@ -192,25 +192,30 @@ static bool getSParameter(char* result,uint32_t len,const char* sep,const char* 
 	return false;
 }
 
-static char* getParameter(const char* sep,const char* param, char* data, uint16_t data_length) {
+static char* getParameter(const char* sep, const char* param, char* data, uint16_t data_length) {
 	if ((data == NULL) || (param == NULL))return NULL;
 	char* p = strstr(data, param);
 	if(p != NULL) {
 		p += strlen(param);
 		char* p_end = strstr(p, sep);
-		if(p_end ==NULL) p_end = data_length + data;
+		if(p_end == NULL) p_end = data_length + data;
 		if(p_end != NULL ) {
-			if (p_end==p) return NULL;
-			char* t = inmalloc(p_end-p + 1);
-			if (t == NULL) { printf("getParameterF fails\n"); return NULL;}
-			ESP_LOGV(TAG,"getParameter malloc of %d  for %s",p_end-p + 1,param);
-			int i;
-			for(i=0; i<(p_end-p + 1); i++) t[i] = 0;
-			strncpy(t, p, p_end-p);
-			ESP_LOGV(TAG,"getParam: in: \"%s\"   \"%s\"",data,t);
-			return t;
-		} else return NULL;
-	} else return NULL;
+			int n = p_end-p;
+			if (n > 0) {
+				char* t = inmalloc(n + 1);
+				if(t == NULL) {
+					printf("getParameterF fails\n");
+				} else {
+					ESP_LOGV(TAG,"getParameter malloc of %d  for %s",p_end-p + 1,param);
+					memset(t, 0, n+1);
+					strncpy(t, p, n);
+					ESP_LOGV(TAG,"getParam: in: \"%s\"   \"%s\"",data,t);
+					return t;
+				}
+			}
+		}
+	}
+	return NULL;
 }
 
 static char* getParameterFromResponse(const char* param, char* data, uint16_t data_length) {
@@ -345,15 +350,17 @@ static void theme() {
 
 // treat the received message of the websocket
 void websockethandle(int socket, wsopcode_t opcode, uint8_t * payload, size_t length) {
-	// Commands to add : volume, setStation, hardware, updateOk, erase, timerOn, timerOff, sound, auto, ...
+	// 2020-02-08 new commands : upgrade, volume, clear,
+	// Commands to add : setStation, hardware, wifi, timerOn, timerOff, sound, auto, ...
 	ESP_LOGV(TAG,"websocketHandle: %s", payload);
-	char noStation[73+76+6] = {"{\"Name\":\"\",\"URL\":\"\",\"File\":\"\",\"Port\":0,\"ovol\":0}"};
+	// char noStation[73+76+6] = {"{\"Name\":\"\",\"URL\":\"\",\"File\":\"\",\"Port\":0,\"ovol\":0}"};
+	char noStation[156] = {"\0"};
 	char value[6] = "";
 
 	if(strcmp((char*)payload,"wsrssi") == 0) {
 		rssi(socket);
 		return;
-	} else if(strstr((char*)payload,"wsvol=")!= NULL) {
+	} else if(strstr((char*)payload, "wsvol=")!= NULL) {
 		char answer[17];
 		if (strstr((char*)payload,"&") != NULL)
 			*strstr((char*)payload,"&")=0;
@@ -367,6 +374,12 @@ void websockethandle(int socket, wsopcode_t opcode, uint8_t * payload, size_t le
 			playStationInt(uid);
 		}
 		return;
+	} else if(getSParameterFromResponse(value, sizeof(value), "volume=", (char*)payload, length)) {
+		int uvol = atoi(value);
+		if(uvol >=0 && uvol < 255) {
+			setVolume(value);
+			wsVol(value);
+		}
 	} else if(getSParameterFromResponse(value, sizeof(value), "getStationsFrom=", (char*)payload, length)) {
 		int uid = atoi(value);
 		if (uid >=0 && uid < 255) {
@@ -553,23 +566,27 @@ void websockethandle(int socket, wsopcode_t opcode, uint8_t * payload, size_t le
 		playStationInt(getCurrentStation());
 		// wsicy message will be sent
 		return;
-	} else if(strstr((char*)payload,"startSleep=")!= NULL) {
+	} else if(strstr((char*)payload, "startSleep=")!= NULL) {
 		if (strstr((char*)payload,"&") != NULL)
 			*strstr((char*)payload,"&")=0;
 		else return;
 		startSleep(atoi((char*)payload+11));
-	} else if(strstr((char*)payload,"stopSleep")!= NULL) {
+	} else if(strstr((char*)payload, "stopSleep")!= NULL) {
 		stopSleep();
-	} else if (strstr((char*)payload,"startWake=")!= NULL) {
+	} else if (strstr((char*)payload, "startWake=")!= NULL) {
 		if (strstr((char*)payload,"&") != NULL)
 			*strstr((char*)payload,"&")=0;
 		else return;
 		startWake(atoi((char*)payload+10));
-	} else if (strstr((char*)payload,"stopWake")!= NULL) {
+	} else if (strstr((char*)payload, "stopWake")!= NULL) {
 		stopWake();
-	} else if (strstr((char*)payload,"monitor")!= NULL) {
+	} else if (strstr((char*)payload, "monitor")!= NULL) {
 		wsMonitor();
-	} else if (strstr((char*)payload,"theme")!= NULL) {
+	} else if(strcmp((char*)payload, "clear") == 0) {
+		eeEraseStations();	//clear all stations
+	} else if(strcmp((char*)payload, "upgrade") == 0) {
+		update_firmware((char*)"KaRadio32");  // start the OTA
+	} else if (strstr((char*)payload, "theme")!= NULL) {
 		theme();
 	}
 }
@@ -1232,7 +1249,8 @@ static bool httpServerHandleConnection(int conn, char* buf, uint16_t buflen) {
 				param = strstr(c,"version") ;
 				if (param != NULL) {
 					char vr[30];// = malloc(30);
-					sprintf(vr,"Release: %s, Revision: %s (%s)", RELEASE, REVISION, WS_SOCKET_VERSION);
+					esp_app_desc_t* app_descr = get_app_desc();
+					sprintf(vr,"Release: %s (%s)", app_descr->version, WS_SOCKET_VERSION);
 					printf("Version:%s\n",vr);
 					respOk(conn,vr);
 					return true;

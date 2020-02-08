@@ -43,14 +43,27 @@ static const char *TAG = "OTA";
 extern const uint8_t server_cert_pem_start[] asm("_binary_ca_cert_pem_start");
 extern const uint8_t server_cert_pem_end[] asm("_binary_ca_cert_pem_end");
 
-#define BUFFSIZE 1024
-static char ota_write_data[BUFFSIZE + 1] = { 0 };
+#define OTA_BUFFSIZE 2048
 
 static bool taskState = false;
+static char ota_write_data[OTA_BUFFSIZE + 1] = {"\0"};
+
+/*
+void *inmalloc(size_t size) {
+	void* ret = malloc(size);
+	ESP_LOGV(TAG,"server Malloc of %x : %u bytes - Heap size: %u", (int)ret, size, xPortGetFreeHeapSize());
+	return ret;
+}
+
+void infree(void *p) {
+	ESP_LOGV(TAG,"server free of %x - Heap size: %u", (int)p, xPortGetFreeHeapSize());
+	if (p != NULL) { free(p); }
+}
+ * */
 
 void wsUpgrade(const char* status, int count, int total) {
 	char message[70] = {"\0"};
-	sprintf(message, "{\"update\":{\"status\":\"%s\",\"count\":%d,\"total\":%d}}", status, count, total);
+	sprintf(message, "{\"upgrade\":{\"status\":\"%s\",\"count\":%d,\"total\":%d}}", status, count, total);
 	websocketbroadcast(message, strlen(message));
 }
 
@@ -77,6 +90,7 @@ static void __attribute__((noreturn)) task_fatal_error() {
 	}
 }
 
+/*
 static void infinite_loop(void) {
 	ESP_LOGI(TAG, "When a new firmware is available on the server, press the reset button !");
 	int i = 0;
@@ -85,11 +99,24 @@ static void infinite_loop(void) {
 		vTaskDelay(600000 / portTICK_PERIOD_MS);
 	}
 }
+ * */
 
 void otaTask(void *pvParams) {
 #ifdef CONFIG_OTA_FIRMWARE_ACCOUNT
-	clientDisconnect("OTA");
-	ESP_LOGI(TAG, "Starting OTA update");
+	ESP_LOGI(TAG, "Starting upgrading");
+
+	/*
+	char* ota_write_data = malloc(OTA_BUFFSIZE + 1);
+	ESP_LOGV(TAG,"server Malloc of %x : %u bytes - Heap size: %u", (int)ota_write_data, (OTA_BUFFSIZE + 1), xPortGetFreeHeapSize());
+	if(ota_write_data == NULL) {
+		ESP_LOGE(TAG, "server failed ! Heap size: %d", xPortGetFreeHeapSize());
+		vTaskDelay(50 / portTICK_PERIOD_MS);
+		taskState = false;
+		(void)vTaskDelete( NULL );
+		return;
+	}
+	vTaskDelay(50 / portTICK_PERIOD_MS);
+	* */
 
 	char upgrade_url[128];
 	sprintf(
@@ -153,38 +180,26 @@ void otaTask(void *pvParams) {
 
 	assert(update_partition != NULL);
 
+	TickType_t delay_loading = 30 / portTICK_PERIOD_MS;
+	uint min_size = sizeof(esp_image_header_t) + sizeof(esp_image_segment_header_t) + sizeof(esp_app_desc_t);
 	esp_app_desc_t new_app_info;
 	int binary_file_length = 0;
 	bool image_header_was_checked = false;
 	while(true) {
-		int data_read = esp_http_client_read(client, ota_write_data, BUFFSIZE);
+		int data_read = esp_http_client_read(client, ota_write_data, OTA_BUFFSIZE);
 		if(data_read < 0) {
 			ESP_LOGE(TAG, "Error SSL data read error");
-			esp_http_client_cleanup(client);
-			task_fatal_error();
+			break;
 		} else if(data_read > 0) {
 			if(! image_header_was_checked) {
-				if(data_read < sizeof(esp_image_header_t) + sizeof(esp_image_segment_header_t) + sizeof(esp_app_desc_t)) {
-					ESP_LOGE(TAG, "Received package is not fit length");
-					http_cleanup(client);
-					task_fatal_error();
+				if(data_read < min_size) {
+					ESP_LOGE(TAG, "Received package of %u doesn't fit the minimal length (%u)", data_read, min_size);
+					break;
 				} else {
 					memcpy(&new_app_info, &ota_write_data[sizeof(esp_image_header_t) + sizeof(esp_image_segment_header_t)], sizeof(esp_app_desc_t));
 					ESP_LOGI(TAG, "New firmware version : %s", new_app_info.version);
+
 					esp_app_desc_t app_info;
-
-					const esp_partition_t *last_invalid_app = esp_ota_get_last_invalid_partition();
-					if(last_invalid_app != NULL) {
-						if(esp_ota_get_partition_description(last_invalid_app, &app_info) == ESP_OK) {
-							ESP_LOGI(TAG, "Last invalid firmware version : %s", app_info.version);
-							if(compVersions(new_app_info.version, app_info.version) == 0) {
-								ESP_LOGW(TAG, "New version (%s) is the same as invalid version", new_app_info.version);
-								http_cleanup(client);
-								infinite_loop();
-							}
-						}
-					}
-
 					if(esp_ota_get_partition_description(running, &app_info) == ESP_OK) {
 						ESP_LOGI(TAG, "Running firmware version : %s", app_info.version);
 						if(compVersions(new_app_info.version, app_info.version) <= 0) {
@@ -193,67 +208,85 @@ void otaTask(void *pvParams) {
 								app_info.version,
 								new_app_info.version
 							);
-							http_cleanup(client);
-							infinite_loop();
+							wsUpgrade("updated", 0, 0);
+							break;
+						} else { // New firmware available
+							const esp_partition_t *last_invalid_app = esp_ota_get_last_invalid_partition();
+							if(
+								last_invalid_app != NULL &&
+								esp_ota_get_partition_description(last_invalid_app, &app_info) == ESP_OK
+							) {
+								ESP_LOGI(TAG, "Last invalid firmware version : %s", app_info.version);
+								if(compVersions(new_app_info.version, app_info.version) == 0) {
+									ESP_LOGW(TAG, "New version (%s) is the same as invalid version", new_app_info.version);
+									wsUpgrade("Invalid", 0, binary_file_length);
+									break;
+								}
+							}
+
+							err = esp_ota_begin(update_partition, OTA_SIZE_UNKNOWN, &update_handle);
+							if(err != ESP_OK) {
+								ESP_LOGE(TAG, "esp_ota_begin failed (%s)", esp_err_to_name(err));
+								wsUpgrade("failed", binary_file_length, binary_file_length);
+								break;
+							}
+							ESP_LOGI(TAG, "esp_ota_begin succeeded");
+							wsUpgrade("starting", 0, 0);
+							clientDisconnect("OTA");
+							image_header_was_checked = true;
 						}
 					} else {
 						ESP_LOGE(TAG, "Unable to get the current version");
-						http_cleanup(client);
-						task_fatal_error();
+						break;
 					}
-
-					err = esp_ota_begin(update_partition, OTA_SIZE_UNKNOWN, &update_handle);
-					if(err != ESP_OK) {
-						ESP_LOGE(TAG, "esp_ota_begin failed (%s)", esp_err_to_name(err));
-						wsUpgrade("failed", binary_file_length, binary_file_length);
-						http_cleanup(client);
-						task_fatal_error();
-					}
-					ESP_LOGI(TAG, "esp_ota_begin succeeded");
-					wsUpgrade("starting", 0, 0);
-					image_header_was_checked = true;
 				}
 			}
 
 			err = esp_ota_write(update_handle, (const void *) ota_write_data, data_read);
 			if(err != ESP_OK) {
-				http_cleanup(client);
-				task_fatal_error();
+				ESP_LOGW(TAG, "Unable to write more than %u bytes in the partition", binary_file_length);
+				break;
 			}
 			binary_file_length += data_read;
 			// ESP_LOGD(TAG, "Written image length : %d", binary_file_length);
 			ESP_LOGW(TAG, "Written image length : %d", binary_file_length);
 			wsUpgrade("downloading", binary_file_length, binary_file_length);
-			vTaskDelay(10 / portTICK_PERIOD_MS);
+			vTaskDelay(delay_loading);
 		} else { // data_read == 0
 			ESP_LOGI(TAG, "Connection closed.");
 			ESP_LOGI(TAG, "Total written binary data length : %d", binary_file_length);
 
 			if(esp_ota_end(update_handle) != ESP_OK) {
 				ESP_LOGE(TAG, "esp_ota_end failed !");
-				http_cleanup(client);
-				task_fatal_error();
+			} else {
+				err = esp_ota_set_boot_partition(update_partition);
+				if(err != ESP_OK) {
+					ESP_LOGE(TAG, "esp_ota_set_boot_partition failed (%s)", esp_err_to_name(err));
+				} else {
+				    ESP_LOGI(TAG, "Prepare to restart system!");
+					vTaskDelay(delay_loading);
+				    esp_restart();
+				}
 			}
-
-			err = esp_ota_set_boot_partition(update_partition);
-			if(err != ESP_OK) {
-				ESP_LOGE(TAG, "esp_ota_set_boot_partition failed (%s)", esp_err_to_name(err));
-				http_cleanup(client);
-				task_fatal_error();
-			}
-
-		    ESP_LOGI(TAG, "Prepare to restart system!");
-			// kprintf("Update firmware succeded. Restarting\n");
-			vTaskDelay(10);
-		    esp_restart();
 
 			break;
 		}
 	}
+
+	http_cleanup(client);
+	// ESP_LOGV(TAG,"server free of %x - Heap size: %u", (int)ota_write_data, xPortGetFreeHeapSize());
+	// free(ota_write_data);
+	vTaskDelay(50 / portTICK_PERIOD_MS);
+	ESP_LOGV(TAG, "Done");
+	wsUpgrade("Done", 0, 0);
+	taskState = false;
 #else
 	ESP_LOGE(TAG, "CONFIG_OTA_FIRMWARE_ACCOUNT not set. Check config !!");
 #endif
+	wsUpgrade("Bye-bye", 0, 0);
+	ESP_LOGV(TAG, "Bye-Bye");
 	taskState = false;
+	vTaskDelay(100 / portTICK_PERIOD_MS);
 	(void)vTaskDelete( NULL );
 }
 

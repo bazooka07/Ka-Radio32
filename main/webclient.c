@@ -462,29 +462,31 @@ void wsStationPrev()
 }
 
 // websocket: broadcast volume to all client
-void wsVol(char* vol)
-{
-	char answer[21];
-	if (vol != NULL)
-	{
+void wsVol(char* vol) {
+	if (vol != NULL) {
+		char answer[21];
 		sprintf(answer,"{\"wsvol\":\"%s\"}",vol);
 		websocketbroadcast(answer, strlen(answer));
 	}
 }
 // websocket: broadcast monitor url
-void wsMonitor()
-{
+void wsMonitor() {
+	if ((clientPath[0]!= 0)) {
 		char answer[300];
-		memset(answer,0,300);
-		if ((clientPath[0]!= 0))
-		{
-			sprintf(answer,"{\"monitor\":\"http://%s:%u%s\",\"curst\":%u}",clientURL,clientPort,clientPath, getCurrentStation());
-			websocketbroadcast(answer, strlen(answer));
-		}
+		// memset(answer,0,300);
+		sprintf(
+			answer,
+			"{\"monitor\":\"http://%s:%u%s\",\"curst\":%u}",
+			clientURL,
+			clientPort,
+			clientPath,
+			getCurrentStation()
+		);
+		websocketbroadcast(answer, strlen(answer));
+	}
 }
 //websocket: broadcast all icy and meta info to web client.
-static void wsHeaders()
-{
+static void wsHeaders() {
 //remove	uint8_t header_num;
 	char currentSt[6];
 	sprintf(currentSt,"%d",getCurrentStation());
@@ -730,20 +732,22 @@ void clientSilentDisconnect()
 
 }
 
-void clientDisconnect(const char* from)
-{
+void clientDisconnect(const char* from) {
+	TickType_t delay = 10 / portTICK_PERIOD_MS;
 	kprintf(CLISTOP,from);
 	xSemaphoreGive(sDisconnect);
 	audio_player_stop();
-	for (int i = 0;i<100;i++)
-	{
-		if(!clientIsConnected())break;
-		vTaskDelay(1);
+	for(int i=0; i<100; i++) {
+		if(!clientIsConnected()) {
+			break;
+		}
+		vTaskDelay(delay);
 	}
-	if ((from[0]!='C') || (from[1]!='_'))
-		if (!ledStatus) gpio_set_level(getLedGpio(),0);
+	if ((from[0]!='C' || from[1]!='_') && !ledStatus) {
+		gpio_set_level(getLedGpio(), 0);
+	}
 	esp_wifi_set_ps(WIFI_PS_MAX_MODEM);
-	vTaskDelay(5);
+	vTaskDelay(delay);
 }
 
 void clientReceiveCallback(int sockfd, char *pdata, int len)

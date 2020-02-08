@@ -8,6 +8,7 @@
 #include "esp_log.h"
 #include "telnet.h"
 #include "addon.h"
+#include "esp_ota_ops.h"
 
 // need this for ported soft to esp32
 #define ESP32_IDF
@@ -16,8 +17,8 @@
 #define MAXDATAT	 256
 
 
-#define RELEASE "1.9"
-#define REVISION "6"
+// #define RELEASE "1.9"
+// #define REVISION "6"
 #define WS_SOCKET_VERSION "2"
 
 uint32_t checkUart(uint32_t speed);
@@ -47,6 +48,8 @@ uint8_t getDdmm();
 void setRotat(uint8_t dm);
 uint8_t getRotat();
 void setHostname(char* s);
+
+esp_app_desc_t* get_app_desc();
 
 #define kprintf(fmt, ...) do {    \
         printf(fmt, ##__VA_ARGS__);   \
