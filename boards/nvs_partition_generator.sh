@@ -24,6 +24,7 @@ build_binary () {
 		--size $SIZE_PARTITION
 }
 
+MY_BOARD="MY-BOARD"
 if [ "$#" -eq 0 ]; then
 	# clean up !!
 	rm -f build/*.bin
@@ -32,7 +33,6 @@ if [ "$#" -eq 0 ]; then
 		build_binary "$filename"
 	done
 else
-	MY_BOARD="MY-BOARD"
 	if [ "$#" -eq 1 ]; then
 		MY_BOARD="${1%.*}"
 	fi
