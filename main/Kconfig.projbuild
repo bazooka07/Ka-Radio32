@@ -18,6 +18,28 @@ config WIFI_PASSWORD
 
 endmenu
 
+menu "Config for OTA from Github"
+
+	config OTA_FIRMWARE_ACCOUNT
+		string "account"
+		default "bazooka07"
+		help
+			Account on Github
+
+	config OTA_FIRMWARE_REPOSITORY
+		string "repository"
+		default "Ka-Radio32"
+		help
+			Repository on Github
+
+	config OTA_FIRMWARE_BRANCH
+		string "branch"
+		default "extensions"
+		help
+			Branch of developpement
+
+endmenu
+
 menu "Audio Output"
 
 choice

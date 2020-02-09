@@ -225,24 +225,24 @@ static char* getParameterFromComment(const char* param, char* data, uint16_t dat
 
 // https://circuits4you.com/2019/03/21/esp8266-url-encode-decode-example/
 unsigned char h2int(char c) {
-    if (c >= '0' && c <='9'){
-        return((unsigned char)c - '0');
-    }
-    if (c >= 'a' && c <='f'){
-        return((unsigned char)c - 'a' + 10);
-    }
-    if (c >= 'A' && c <='F'){
-        return((unsigned char)c - 'A' + 10);
-    }
-    return(0);
+	if (c >= '0' && c <='9'){
+		return((unsigned char)c - '0');
+	}
+	if (c >= 'a' && c <='f'){
+		return((unsigned char)c - 'a' + 10);
+	}
+	if (c >= 'A' && c <='F'){
+		return((unsigned char)c - 'A' + 10);
+	}
+	return(0);
 }
 
 // decode URI like Javascript
 static void pathParse(char* str) {
-    char c;
-    char code0;
-    char code1;
-    int j=0;
+	char c;
+	char code0;
+	char code1;
+	int j=0;
 	if (str == NULL) return;
 	for (int i=0; i< strlen(str);i++) {
 		if(str[i] == '+') {
@@ -327,10 +327,10 @@ static void rssi(int socket) {
 	char answer[20];
 	int8_t rssi = -30;
 	wifi_ap_record_t wifidata;
-    esp_wifi_sta_get_ap_info(&wifidata);
-    if (wifidata.primary != 0) {
-        rssi = wifidata.rssi;
-    }
+	esp_wifi_sta_get_ap_info(&wifidata);
+	if (wifidata.primary != 0) {
+		rssi = wifidata.rssi;
+	}
 	sprintf(answer,"{\"wsrssi\":\"%d\"}",rssi);
 	websocketwrite(socket,answer, strlen(answer));
 }
@@ -1298,8 +1298,8 @@ static bool httpServerHandleConnection(int conn, char* buf, uint16_t buflen) {
 // Server child task to handle a request from a browser.
 void serverclientTask(void *pvParams) {
 	struct timeval timeout;
-    timeout.tv_sec = 6;
-    timeout.tv_usec = 0;
+	timeout.tv_sec = 6;
+	timeout.tv_usec = 0;
 	int recbytes ,recb;
 	char  buf[DRECLEN];
 	portBASE_TYPE uxHighWaterMark;

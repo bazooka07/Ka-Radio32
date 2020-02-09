@@ -1,0 +1,15 @@
+-Go to : "https://github.com/bazooka07/Ka-Radio32/blob/extensions/build/KaRadio32.bin"
+-Right-click on the "download" button and copy the url of link
+-Go inside a console and check the url with "curl -v https://github.com/bazooka07/Ka-Radio32/raw/extensions/build/KaRadio32.bin"
+-Notice the new url for 301 redirection :
+-https://raw.githubusercontent.com/bazooka07/Ka-Radio32/extensions/build/KaRadio32.bin
+-Copy this new url in Kconfigprojbuild
+-curl -v again with the new url
+-notice handshacking for ssl certificates:
+-"issuer: C=US; O=DigiCert Inc; OU=www.digicert.com; CN=DigiCert SHA2 High Assurance Server CA"
+-Look for "DigiCert SHA2 High Assurance Server CA" with Google or other
+-Go to Digicert for downloading its certificate
+-Finally :
+-wget -O ca_cert.pem 'https://dl.cacerts.digicert.com/DigiCertSHA2HighAssuranceServerCA.crt.pem'
+-
+-In short : https://raw.githubusercontent.com/ACCOUNT/REPOSITORY/BRANCH/PATH_FOR_THE_BINARY

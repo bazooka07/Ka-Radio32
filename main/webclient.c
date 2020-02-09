@@ -150,7 +150,7 @@ bool clientParsePlaylist(char* s)
   if (str != NULL) //skip to next line
   {
 	ns = str;
-    while ((strlen(ns) > 1) && (ns[0]!=0x0A)) ns++;
+	while ((strlen(ns) > 1) && (ns[0]!=0x0A)) ns++;
 	ESP_LOGV(TAG,"EXTM3U: %s",ns);
 	s= ns;
   }
@@ -230,7 +230,7 @@ static char* stringify(char* str,int len)
 {
 #define MORE	20
 //		if ((strchr(str,'"') == NULL)&&(strchr(str,'/') == NULL)) return str;
-        if (len == 0) return str;
+		if (len == 0) return str;
 		char* new = incmalloc(len+MORE);
 		int nlen = len+MORE;
 		if (new != NULL)
@@ -784,13 +784,13 @@ void clientReceiveCallback(int sockfd, char *pdata, int len)
 	switch (cstatus)
 	{
 	case C_PLAYLIST:
-         if (!clientParsePlaylist(pdata)) //need more
+		 if (!clientParsePlaylist(pdata)) //need more
 		  cstatus = C_PLAYLIST1;
 		else {clientDisconnect("C_PLIST");  }
-    break;
+	break;
 	case C_PLAYLIST1:
-       clientDisconnect("C_PLIST1");
-        clientParsePlaylist(pdata) ;//more?
+	   clientDisconnect("C_PLIST1");
+		clientParsePlaylist(pdata) ;//more?
 		cstatus = C_PLAYLIST;
 	break;
 	case C_HEADER0:
@@ -1092,7 +1092,7 @@ static  char useragent[40];
 void clientTask(void *pvParams) {
 	portBASE_TYPE uxHighWaterMark;
 	struct timeval timeout;
-    timeout.tv_usec = 0;
+	timeout.tv_usec = 0;
 	timeout.tv_sec = 3;
 	int sockfd;
 	int bytes_read;
@@ -1148,7 +1148,7 @@ void clientTask(void *pvParams) {
 				  cstatus = C_PLAYLIST;
 //printf("sprint%d\n",6);
 				  sprintf((char*)bufrec, "GET %s HTTP/1.1\r\nHOST: %s\r\nUser-Agent: %s\r\n\r\n", clientPath,clientURL,useragent); //ask for the playlist
-			    }
+				}
 				else
 				{
 					if (strcmp(clientURL,"stream.pcradio.biz") ==0) strcpy(useragent,"pcradio");

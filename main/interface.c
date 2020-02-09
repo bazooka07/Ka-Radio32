@@ -1,5 +1,5 @@
 /******************************************************************************
- * 
+ *
  * Copyright 2018 karawin (http://www.karawin.fr)
  *
 *******************************************************************************/
@@ -132,7 +132,7 @@ help: this command\n\
 \n\
 A command error display:\n\
 ##CMD_ERROR#\n\r"\
-}; 
+};
 
 uint16_t currentStation = 0;
 static gpio_num_t led_gpio = GPIO_NONE;
@@ -172,12 +172,12 @@ void setVolumePlus()
 void setVolumeMinus()
 {
 	setRelVolume(-10);
-}		
+}
 void setVolumew(char* vol)
 {
-	setVolume(vol);	
+	setVolume(vol);
 	wsVol(vol);
-}	
+}
 
 uint16_t getCurrentStation()
 {
@@ -188,24 +188,24 @@ void setCurrentStation( uint16_t cst)
 	currentStation = cst;
 }
 
-unsigned short adcdiv;	
+unsigned short adcdiv;
 
 uint8_t startsWith(const char *pre, const char *str)
 {
-    size_t lenpre = strlen(pre),
-           lenstr = strlen(str);
-    return lenstr < lenpre ? false : strncmp(pre, str, lenpre) == 0;
+	size_t lenpre = strlen(pre),
+		   lenstr = strlen(str);
+	return lenstr < lenpre ? false : strncmp(pre, str, lenpre) == 0;
 }
 
 void readRssi()
 {
 	int8_t rssi = -30;
 	wifi_ap_record_t wifidata;
-    esp_wifi_sta_get_ap_info(&wifidata);
-    if (wifidata.primary != 0) {
-        rssi = wifidata.rssi;
+	esp_wifi_sta_get_ap_info(&wifidata);
+	if (wifidata.primary != 0) {
+		rssi = wifidata.rssi;
  //       info.channel = wifidata.primary;
-    }
+	}
 //	rssi = wifi_station_get_rssi();
 	kprintf("##RSSI: %d\n",rssi);
 }
@@ -218,7 +218,7 @@ void printInfo(char* s)
 
 const char htitle []  = {"\
 =============================================================================\n \
-             SSID                   |    RSSI    |           AUTH            \n\
+			 SSID                   |    RSSI    |           AUTH            \n\
 =============================================================================\n\
 "};
 const char hscan1 []  = {"#WIFI.SCAN#\n Number of access points found: %d\n"};
@@ -229,10 +229,10 @@ void wifiScan()
 uint16_t number;
 wifi_ap_record_t *records;
 wifi_scan_config_t config = {
-      .ssid = NULL,
-      .bssid = NULL,
-      .channel = 0,
-      .show_hidden = true
+	  .ssid = NULL,
+	  .bssid = NULL,
+	  .channel = 0,
+	  .show_hidden = true
 };
 
 	config.scan_type = WIFI_SCAN_TYPE_PASSIVE;
@@ -243,36 +243,36 @@ wifi_scan_config_t config = {
 	if (records == NULL) return;
 	esp_wifi_scan_get_ap_records(&number, records); // get the records
 	kprintf(hscan1,number);
-    if (number == 0) {
+	if (number == 0) {
 		free (records);
-         return ;
+		 return ;
 	}
 	int i;
 	kprintf(htitle);
 
 	for (i=0; i<number; i++) {
-         char *authmode;
-         switch(records[i].authmode) {
-            case WIFI_AUTH_OPEN:
-               authmode = (char*)"WIFI_AUTH_OPEN";
-               break;
-            case WIFI_AUTH_WEP:
-               authmode = (char*)"WIFI_AUTH_WEP";
-               break;           
-            case WIFI_AUTH_WPA_PSK:
-               authmode = (char*)"WIFI_AUTH_WPA_PSK";
-               break;           
-            case WIFI_AUTH_WPA2_PSK:
-               authmode = (char*)"WIFI_AUTH_WPA2_PSK";
-               break;           
-            case WIFI_AUTH_WPA_WPA2_PSK:
-               authmode = (char*)"WIFI_AUTH_WPA_WPA2_PSK";
-               break;
-            default:
-               authmode = (char*)"Unknown";
-               break;
-         }
-         kprintf("%32.32s    |    % 4d    |    %22.22s\n",records[i].ssid, records[i].rssi, authmode);
+		 char *authmode;
+		 switch(records[i].authmode) {
+			case WIFI_AUTH_OPEN:
+			   authmode = (char*)"WIFI_AUTH_OPEN";
+			   break;
+			case WIFI_AUTH_WEP:
+			   authmode = (char*)"WIFI_AUTH_WEP";
+			   break;
+			case WIFI_AUTH_WPA_PSK:
+			   authmode = (char*)"WIFI_AUTH_WPA_PSK";
+			   break;
+			case WIFI_AUTH_WPA2_PSK:
+			   authmode = (char*)"WIFI_AUTH_WPA2_PSK";
+			   break;
+			case WIFI_AUTH_WPA_WPA2_PSK:
+			   authmode = (char*)"WIFI_AUTH_WPA_WPA2_PSK";
+			   break;
+			default:
+			   authmode = (char*)"Unknown";
+			   break;
+		 }
+		 kprintf("%32.32s    |    % 4d    |    %22.22s\n",records[i].ssid, records[i].rssi, authmode);
 	}
 	kprintf("##WIFI.SCAN#: DONE\n");
 
@@ -283,7 +283,7 @@ void wifiConnect(char* cmd)
 {
 	int i;
 	for(i = 0; i < 32; i++) g_device->ssid1[i] = 0;
-	for(i = 0; i < 64; i++) g_device->pass1[i] = 0;	
+	for(i = 0; i < 64; i++) g_device->pass1[i] = 0;
 	char *t = strstr(cmd, parslashquote);
 	if(t == 0)
 	{
@@ -296,9 +296,9 @@ void wifiConnect(char* cmd)
 		kprintf(stritCMDERROR);
 		return;
 	}
-	
+
 	strncpy( g_device->ssid1, (t+2), (t_end-t-2) );
-	
+
 	t = t_end+3;
 	t_end = strstr(t, parquoteslash);
 	if(t_end == 0)
@@ -306,7 +306,7 @@ void wifiConnect(char* cmd)
 		kprintf(stritCMDERROR);
 		return;
 	}
-	
+
 	strncpy( g_device->pass1, t, (t_end-t)) ;
 	g_device->current_ap = 1;
 	g_device->dhcpEn1 = 1;
@@ -343,16 +343,16 @@ void wifiAuto(char* cmd)
 		return;
 	}
 	char *t_end  = strstr(t, parquoteslash);
-    if(t_end == NULL)
-    {
+	if(t_end == NULL)
+	{
 		kprintf(stritCMDERROR);
 		return;
-    }	
+	}
 	uint8_t value = atoi(t+2);
-	
+
 	if (value == 0)
 		g_device->options32 &= NT_WIFIAUTO;
-	else 
+	else
 		g_device->options32 |= T_WIFIAUTO;
 	autoWifi = value;
 	saveDeviceSettings(g_device);
@@ -377,7 +377,7 @@ void wifiDisconnect()
 
 void wifiStatus()
 {
-	tcpip_adapter_ip_info_t ipi;	
+	tcpip_adapter_ip_info_t ipi;
 	tcpip_adapter_get_ip_info(TCPIP_ADAPTER_IF_STA, &ipi);
 	kprintf(stritWIFISTATUS,
 			  (ipi.ip.addr&0xff), ((ipi.ip.addr>>8)&0xff), ((ipi.ip.addr>>16)&0xff), ((ipi.ip.addr>>24)&0xff),
@@ -404,19 +404,19 @@ void clientParseUrl(char* s)
 	}
 	t_end -= 2;
 
-    char *url = (char*) malloc((t_end-t+1)*sizeof(char));
-    if(url != NULL)
-    {
-        uint8_t tmp;
-        for(tmp=0; tmp<(t_end-t+1); tmp++) url[tmp] = 0;
-        strncpy(url, t+2, (t_end-t));
-        clientSetURL(url);
+	char *url = (char*) malloc((t_end-t+1)*sizeof(char));
+	if(url != NULL)
+	{
+		uint8_t tmp;
+		for(tmp=0; tmp<(t_end-t+1); tmp++) url[tmp] = 0;
+		strncpy(url, t+2, (t_end-t));
+		clientSetURL(url);
 		char* title = malloc(88);
-		sprintf(title,"{\"iurl\":\"%s\"}",url); 
+		sprintf(title,"{\"iurl\":\"%s\"}",url);
 		websocketbroadcast(title, strlen(title));
-		free(title);		
-        free(url);		
-    }
+		free(title);
+		free(url);
+	}
 }
 
 void clientParsePath(char* s)
@@ -430,21 +430,21 @@ void clientParsePath(char* s)
 		return;
 	}
 	t_end -= 2;
-	
-    char *path = (char*) malloc((t_end-t+1)*sizeof(char));
-    if(path != NULL)
-    {
-        uint8_t tmp;
-        for(tmp=0; tmp<(t_end-t+1); tmp++) path[tmp] = 0;
-        strncpy(path, t+2, (t_end-t));
+
+	char *path = (char*) malloc((t_end-t+1)*sizeof(char));
+	if(path != NULL)
+	{
+		uint8_t tmp;
+		for(tmp=0; tmp<(t_end-t+1); tmp++) path[tmp] = 0;
+		strncpy(path, t+2, (t_end-t));
 //kprintf("cli.path: %s\n",path);
-        clientSetPath(path);
+		clientSetPath(path);
 		char* title = malloc(130);
-		sprintf(title,"{\"ipath\":\"%s\"}",path); 
+		sprintf(title,"{\"ipath\":\"%s\"}",path);
 		websocketbroadcast(title, strlen(title));
-		free(title);		
-        free(path);
-    }
+		free(title);
+		free(path);
+	}
 }
 
 void clientParsePort(char *s)
@@ -459,20 +459,20 @@ void clientParsePort(char *s)
 	}
 	t_end -= 2;
 
-    char *port = (char*) malloc((t_end-t+1)*sizeof(char));
-    if(port != NULL)
-    {
-        uint8_t tmp;
-        for(tmp=0; tmp<(t_end-t+1); tmp++) port[tmp] = 0;
-        strncpy(port, t+2, (t_end-t));
-        uint16_t porti = atoi(port);
-        clientSetPort(porti);
+	char *port = (char*) malloc((t_end-t+1)*sizeof(char));
+	if(port != NULL)
+	{
+		uint8_t tmp;
+		for(tmp=0; tmp<(t_end-t+1); tmp++) port[tmp] = 0;
+		strncpy(port, t+2, (t_end-t));
+		uint16_t porti = atoi(port);
+		clientSetPort(porti);
 		char* title = malloc(130);
-		sprintf(title,"{\"iport\":\"%d\"}",porti); 
+		sprintf(title,"{\"iport\":\"%d\"}",porti);
 		websocketbroadcast(title, strlen(title));
-		free(title);		
-        free(port);
-    }
+		free(title);
+		free(port);
+	}
 }
 
 
@@ -489,14 +489,14 @@ void clientPlay(char *s)
 	t_end -= 2;
 
 	char *id = (char*) malloc((t_end-t+1)*sizeof(char));
-    if(id != NULL)
-    {
-        uint8_t tmp;
-        for(tmp=0; tmp<(t_end-t+1); tmp++) id[tmp] = 0;
-        strncpy(id, t+2, (t_end-t));
+	if(id != NULL)
+	{
+		uint8_t tmp;
+		for(tmp=0; tmp<(t_end-t+1); tmp++) id[tmp] = 0;
+		strncpy(id, t+2, (t_end-t));
 		playStation(id);
-        free(id);
-    }	
+		free(id);
+	}
 }
 
 const char strilLIST[]  = {"##CLI.LIST#\n"};
@@ -510,28 +510,28 @@ void clientList(char *s)
 	struct shoutcast_info* si;
 	uint16_t i = 0,j = 255;
 	bool onlyOne = false;
-	
+
 	char *t = strstr(s, parslashquote);
 	if(t != NULL) // a number specified
-	{	
+	{
 		char *t_end  = strstr(t, parquoteslash)-2;
 		if(t_end <= (char*)0)
 		{
 			kprintf(stritCMDERROR);
 			return;
-		}	
+		}
 		i = atoi(t+2);
 		if (i>254) i = 0;
 		j = i+1;
-		onlyOne = true;		
-	} 
-	{	
-		if (!onlyOne) kprintf(strilDLIST);	
+		onlyOne = true;
+	}
+	{
+		if (!onlyOne) kprintf(strilDLIST);
 		for ( ;i <j;i++)
 		{
 			vTaskDelay(1);
 			si = getStation(i);
-			
+
 			if ((si == NULL) || (si->port ==0))
 			{
 				if (si != NULL) {free(si);}
@@ -541,15 +541,15 @@ void clientList(char *s)
 			if (si !=NULL)
 			{
 				if(si->port !=0)
-				{	
+				{
 					if (onlyOne)
-						kprintf(strilINFO,i,si->name,si->domain,si->port,si->file,si->ovol);	
+						kprintf(strilINFO,i,si->name,si->domain,si->port,si->file,si->ovol);
 					else
-						kprintf(strilNUM,i,si->name,si->domain,si->port,si->file,si->ovol);	
+						kprintf(strilNUM,i,si->name,si->domain,si->port,si->file,si->ovol);
 				}
 				free(si);
-			}	
-		}	
+			}
+		}
 		if (!onlyOne) kprintf(strilLIST);
 	}
 }
@@ -568,8 +568,8 @@ bool parseUrl(char* src, char* url, char* path, uint16_t *port)
 	{
 		tmp = teu+1;
 		*port = atoi(tmp);
-	}	
-	tbpa = strchr(tmp,'/');	
+	}
+	tbpa = strchr(tmp,'/');
 	if (tbpa)
 	{
 		if(!teu) teu = tbpa-1;
@@ -589,23 +589,23 @@ void clientEdit(char *s)
 {
 struct shoutcast_info* si;
 uint8_t id = 0xff;
-char* tmp; 
+char* tmp;
 char* tmpend ;
 char url[200];
 
-	si = malloc(sizeof(struct shoutcast_info));	
+	si = malloc(sizeof(struct shoutcast_info));
 	if (si == NULL) { kprintf("##CLI.EDIT#: ERROR MEM#") ; return;}
 	memset(si->domain, 0, sizeof(si->domain));
-    memset(si->file, 0, sizeof(si->file));
-    memset(si->name, 0, sizeof(si->name));
+	memset(si->file, 0, sizeof(si->file));
+	memset(si->name, 0, sizeof(si->name));
 	memset(url,0,200);
-    si->port = 80;
+	si->port = 80;
 	si->ovol = 0;
 //	printf("##CLI.EDIT: %s",s);
 	ESP_LOGI(TAG,"%s",s);
 	tmp = s+10;
 	tmpend = strchr(tmp,':');
-	if (tmpend-tmp) id = atoi(tmp);	
+	if (tmpend-tmp) id = atoi(tmp);
 	tmp = ++tmpend;//:
 	tmpend = strchr(tmp,',');
 	if (tmpend-tmp) {strncpy(si->name,tmp,tmpend-tmp);} //*tmpend = 0; }
@@ -616,24 +616,24 @@ char url[200];
 	else url[0] = 0;
 	tmp = ++tmpend;//%
 	tmpend = strchr(tmp,'"');
-	if ((tmpend != NULL)&&(tmpend-tmp)) si->ovol = atoi(tmp);	
-	
-	
-//printf("==> id: %d, name: %s, url: %s\n",id,si->name,url);	
-	
-    // Parsing
+	if ((tmpend != NULL)&&(tmpend-tmp)) si->ovol = atoi(tmp);
+
+
+//printf("==> id: %d, name: %s, url: %s\n",id,si->name,url);
+
+	// Parsing
 	if (url[0] != 0)
 		parseUrl(url, si->domain, si->file, &(si->port));
-	
+
 //printf(" id: %d, name: %s, url: %s, port: %d, path: %s\n",id,si->name,si->domain,si->port,si->file);
 	if (id < 0xff) {
 		if (si->domain[0]==0) {si->port = 0;si->file[0] = 0;}
-		saveStation(si, id); 
+		saveStation(si, id);
 		kprintf("##CLI.EDIT#: OK (%d)\n",id);
 	}
 	else
-		kprintf("##CLI.EDIT#: ERROR\n");	
-	
+		kprintf("##CLI.EDIT#: ERROR\n");
+
 }
 void clientInfo()
 {
@@ -659,7 +659,7 @@ char* webInfo()
 	if (si != NULL)
 	{
 		if (resp != NULL)
-		{	
+		{
 			sprintf(resp,"vol: %d\nnum: %d\nstn: %s\ntit: %s\nsts: %d\n",getVolume(),currentStation,si->name,getMeta(),getState());
 		}
 		free(si);
@@ -686,18 +686,18 @@ char* webList(int id)
 
 void sysI2S(char* s)
 {
-    char *t = strstr(s, parslashquote);
+	char *t = strstr(s, parslashquote);
 	if(t == NULL)
 	{
 		kprintf("##I2S speed of the vs1053: %d, 0=48kHz, 1=96kHz, 2=192kHz#\n",g_device->i2sspeed);
 		return;
 	}
 	char *t_end  = strstr(t, parquoteslash);
-    if(t_end == NULL)
-    {
+	if(t_end == NULL)
+	{
 		kprintf(stritCMDERROR);
 		return;
-    }	
+	}
 	uint8_t speed = atoi(t+2);
 	VS1053_I2SRate(speed);
 
@@ -713,7 +713,7 @@ void sysUart(char* s)
 	char *t_end;
 	t = NULL;
 	if (s != NULL)
-	{	
+	{
 		t = strstr(s, parslashquote);
 		if(t == NULL)
 		{
@@ -724,7 +724,7 @@ void sysUart(char* s)
 			if(t_end == NULL)
 			{
 				empty = true;
-			}	
+			}
 		}
 	}
 	if ((!empty)&&(t!=NULL))
@@ -732,15 +732,15 @@ void sysUart(char* s)
 		uint32_t speed = atoi(t+2);
 		speed = checkUart(speed);
 		g_device->uartspeed= speed;
-		saveDeviceSettings(g_device);	
+		saveDeviceSettings(g_device);
 		kprintf("Speed: %d\n",speed);
 	}
-	kprintf("\n%sUART= %d# on next reset\n",msgsys,g_device->uartspeed);	
+	kprintf("\n%sUART= %d# on next reset\n",msgsys,g_device->uartspeed);
 }
 
 void clientVol(char *s)
 {
-    char *t = strstr(s, parslashquote);
+	char *t = strstr(s, parslashquote);
 	if(t == 0)
 	{
 		// no argument, return the current volume
@@ -748,31 +748,31 @@ void clientVol(char *s)
 		return;
 	}
 	char *t_end  = strstr(t, parquoteslash)-2;
-    if(t_end <= (char*) 0)
-    {
+	if(t_end <= (char*) 0)
+	{
 
 		kprintf(stritCMDERROR);
 		return;
-    }
+	}
    char *vol = (char*) malloc((t_end-t+1)*sizeof(char));
-    if (vol != NULL)
-    {
-        uint8_t tmp;
-        for(tmp=0; tmp<(t_end-t+1); tmp++) vol[tmp] = 0;
-        strncpy(vol, t+2, (t_end-t));
+	if (vol != NULL)
+	{
+		uint8_t tmp;
+		for(tmp=0; tmp<(t_end-t+1); tmp++) vol[tmp] = 0;
+		strncpy(vol, t+2, (t_end-t));
 		if ((atoi(vol)>=0)&&(atoi(vol)<=254))
-		{	
+		{
 			setVolumew(vol);
 //			if (RDA5807M_detection()) RDA5807M_setVolume(atoi(vol)/16);
-		}	
+		}
 		free(vol);
-    }	
+	}
 }
 
 // option for loading or not the pacth of the vs1053
 void syspatch(char* s)
 {
-    char *t = strstr(s, parslashquote);
+	char *t = strstr(s, parslashquote);
 	if(t == NULL)
 	{
 		if ((g_device->options & T_PATCH)!= 0)
@@ -782,25 +782,25 @@ void syspatch(char* s)
 		return;
 	}
 	char *t_end  = strstr(t, parquoteslash);
-    if(t_end == NULL)
-    {
+	if(t_end == NULL)
+	{
 		kprintf(stritCMDERROR);
 		return;
-    }	
+	}
 	uint8_t value = atoi(t+2);
-	if (value ==0) 
-		g_device->options |= T_PATCH; 
-	else 
+	if (value ==0)
+		g_device->options |= T_PATCH;
+	else
 		g_device->options &= NT_PATCH; // 0 = load patch
-	
-	saveDeviceSettings(g_device);	
+
+	saveDeviceSettings(g_device);
 	kprintf(stritPATCH,(g_device->options & T_PATCH)!= 0?"unloaded":"Loaded");
 }
 
 // the gpio to use for the led indicator
 void sysledgpio(char* s)
 {
-    char *t = strstr(s, parslashquote);
+	char *t = strstr(s, parslashquote);
 	if(t == NULL)
 	{
 		kprintf("##Led GPIO is %d#\n",g_device->led_gpio);
@@ -808,15 +808,15 @@ void sysledgpio(char* s)
 	}
 	char *t_end  = strstr(t, parquoteslash);
 	uint8_t value = atoi(t+2);
-    if ((t_end == NULL)||(value >= GPIO_NUM_MAX))
-    {
+	if ((t_end == NULL)||(value >= GPIO_NUM_MAX))
+	{
 		kprintf(stritCMDERROR);
 		return;
-    }	
-	g_device->led_gpio = value; 
+	}
+	g_device->led_gpio = value;
 	led_gpio = value;
 	gpio_output_conf(value);
-	saveDeviceSettings(g_device);	
+	saveDeviceSettings(g_device);
 	gpio_set_ledgpio(value); // write in nvs if any
 	sysledgpio((char*) "");
 //	led_gpio = GPIO_NONE; // for getLedGpio
@@ -829,21 +829,21 @@ uint8_t getLedGpio()
 /*	if (led_gpio == GPIO_NONE)
 	{
 		gpio_get_ledgpio(&led_gpio);
-		if (led_gpio != g_device->led_gpio) 
+		if (led_gpio != g_device->led_gpio)
 		{
 			g_device->led_gpio = led_gpio;
 			saveDeviceSettings(g_device);
-		} 
-	} 
-	
+		}
+	}
+
 	*/
-	return led_gpio;	
+	return led_gpio;
 }
 
 // display or change the lcd type
 void syslcd(char* s)
 {
-    char *t = strstr(s, parslashquote);
+	char *t = strstr(s, parslashquote);
 	if(t == NULL)
 	{
 		kprintf("##LCD is %d#\n",g_device->lcd_type);
@@ -851,14 +851,14 @@ void syslcd(char* s)
 		return;
 	}
 	char *t_end  = strstr(t, parquoteslash);
-    if(t_end == NULL)
-    {
+	if(t_end == NULL)
+	{
 		kprintf(stritCMDERROR);
 		return;
-    }	
+	}
 	uint8_t value = atoi(t+2);
-	g_device->lcd_type = value; 
-	saveDeviceSettings(g_device);	
+	g_device->lcd_type = value;
+	saveDeviceSettings(g_device);
 	option_set_lcd_info(value,rotat );
 	kprintf("##LCD is %d on next reset#\n",value);
 }
@@ -866,7 +866,7 @@ void syslcd(char* s)
 // display or change the DDMM display mode
 void sysddmm(char* s)
 {
-    char *t = strstr(s, parslashquote);
+	char *t = strstr(s, parslashquote);
 
 	if(t == NULL)
 	{
@@ -874,22 +874,22 @@ void sysddmm(char* s)
 			kprintf("##Time is DDMM#\n");
 		else
 			kprintf("##Time is MMDD#\n");
-		
+
 		return;
 	}
 	char *t_end  = strstr(t, parquoteslash);
-    if(t_end == NULL)
-    {
+	if(t_end == NULL)
+	{
 		kprintf(stritCMDERROR);
 		return;
-    }	
+	}
 	uint8_t value = atoi(t+2);
 	if (value == 0)
 		g_device->options32 &= NT_DDMM;
-	else 
+	else
 		g_device->options32 |= T_DDMM;
 	ddmm = (value)?1:0;
-	saveDeviceSettings(g_device);	
+	saveDeviceSettings(g_device);
 	option_set_ddmm(ddmm);
 	sysddmm((char*) "");
 }
@@ -897,7 +897,7 @@ void sysddmm(char* s)
 // get or set the encoder half resolution. Must be set depending of the hardware
 void syshenc(int nenc,char* s)
 {
-    char *t = strstr(s, parslashquote);
+	char *t = strstr(s, parslashquote);
 	Encoder_t *encoder;
 	bool encvalue;
 	encoder = (Encoder_t *)getEncoder(nenc);
@@ -905,7 +905,7 @@ void syshenc(int nenc,char* s)
 	uint8_t options32 = g_device->options32;
 	if (nenc == 0) encvalue = options32&T_ENC0;
 	else encvalue = options32&T_ENC1;
-	
+
 	if(t == NULL)
 	{
 		kprintf("##Step for encoder%d is ",nenc);
@@ -913,23 +913,23 @@ void syshenc(int nenc,char* s)
 			kprintf("half#\n");
 		else
 			kprintf("normal#\n");
-		
+
 //		kprintf("Current value: %d\n",getHalfStep(encoder) );
 		return;
 	}
 	char *t_end  = strstr(t, parquoteslash);
-    if(t_end == NULL)
-    {
+	if(t_end == NULL)
+	{
 		kprintf(stritCMDERROR);
 		return;
-    }	
+	}
 	uint8_t value = atoi(t+2);
 	if (value == 0)
 	{
 		if (nenc ==0) g_device->options32 &= NT_ENC0;
 		else g_device->options32 &= NT_ENC1;
 	}
-	else 
+	else
 	{
 		if (nenc ==0) g_device->options32 |= T_ENC0;
 		else g_device->options32 |= T_ENC1;
@@ -938,13 +938,13 @@ void syshenc(int nenc,char* s)
 	if (nenc == 0) encvalue = g_device->options32&T_ENC0;
 	else encvalue = g_device->options32&T_ENC1;
 	syshenc(nenc,(char*)"");
-	saveDeviceSettings(g_device);	
+	saveDeviceSettings(g_device);
 }
 
 // display or change the rotation lcd mode
 void sysrotat(char* s)
 {
-    char *t = strstr(s, parslashquote);
+	char *t = strstr(s, parslashquote);
 
 	if(t == NULL)
 	{
@@ -956,19 +956,19 @@ void sysrotat(char* s)
 		return;
 	}
 	char *t_end  = strstr(t, parquoteslash);
-    if(t_end == NULL)
-    {
+	if(t_end == NULL)
+	{
 		kprintf(stritCMDERROR);
 		return;
-    }	
+	}
 	uint8_t value = atoi(t+2);
 	if (value == 0)
 		g_device->options32 &= NT_ROTAT;
-	else 
+	else
 		g_device->options32 |= T_ROTAT;
 	rotat = value;
 	option_set_lcd_info(g_device->lcd_type,rotat );
-	saveDeviceSettings(g_device);	
+	saveDeviceSettings(g_device);
 	sysrotat((char*) "");
 }
 
@@ -976,8 +976,8 @@ void sysrotat(char* s)
 // Timer in seconds to switch off the lcd
 void syslcdout(char* s)
 {
-    char *t = strstr(s, parslashquote);
-	lcd_out = g_device->lcd_out; 
+	char *t = strstr(s, parslashquote);
+	lcd_out = g_device->lcd_out;
 	if(t == NULL)
 	{
 		kprintf("##LCD out is ");
@@ -985,15 +985,15 @@ void syslcdout(char* s)
 		return;
 	}
 	char *t_end  = strstr(t, parquoteslash);
-    if(t_end == NULL)
-    {
+	if(t_end == NULL)
+	{
 		kprintf(stritCMDERROR);
 		return;
-    }	
+	}
 	uint8_t value = atoi(t+2);
-	g_device->lcd_out = value; 
+	g_device->lcd_out = value;
 	lcd_out = value;
-	saveDeviceSettings(g_device);	
+	saveDeviceSettings(g_device);
 	option_set_lcd_out(lcd_out);
 	syslcdout((char*) "");
 	wakeLcd();
@@ -1006,15 +1006,15 @@ uint32_t getLcdOut()
 	if (lcd_out == 0xFFFFFFFF)
 	{
 		lcd_out = g_device->lcd_out;
-	} 
+	}
 	if (lcd_out >0) increm++; //adjust
-	return lcd_out+increm;	
+	return lcd_out+increm;
 }
 
 // mode of the led indicator. Blink or play/stop
 void sysled(char* s)
 {
-    char *t = strstr(s, parslashquote);
+	char *t = strstr(s, parslashquote);
 	extern bool ledStatus;
 	if(t == NULL)
 	{
@@ -1022,25 +1022,25 @@ void sysled(char* s)
 		return;
 	}
 	char *t_end  = strstr(t, parquoteslash);
-    if(t_end == NULL)
-    {
+	if(t_end == NULL)
+	{
 		kprintf(stritCMDERROR);
 		return;
-    }	
+	}
 	uint8_t value = atoi(t+2);
-	if (value !=0) 
+	if (value !=0)
 	{g_device->options |= T_LED; ledStatus = false; if (getState()) gpio_set_level(getLedGpio(),0);}
-	else 
+	else
 	{g_device->options &= NT_LED; ledStatus =true;} // options:0 = ledStatus true = Blink mode
-	
+
 	saveDeviceSettings(g_device);
-	sysled((char*) "");	
+	sysled((char*) "");
 }
 
 // mode of the led indicator. polarity 0 or 1
 void sysledpol(char* s)
 {
-    char *t = strstr(s, parslashquote);
+	char *t = strstr(s, parslashquote);
 	extern bool ledPolarity;
 	if(t == NULL)
 	{
@@ -1048,18 +1048,18 @@ void sysledpol(char* s)
 		return;
 	}
 	char *t_end  = strstr(t, parquoteslash);
-    if(t_end == NULL)
-    {
+	if(t_end == NULL)
+	{
 		kprintf(stritCMDERROR);
 		return;
-    }	
+	}
 	uint8_t value = atoi(t+2);
-	if (value !=0) 
+	if (value !=0)
 	{g_device->options |= T_LEDPOL; ledPolarity = true; if (getState()) gpio_set_level(getLedGpio(),0);}
-	else 
-	{g_device->options &= NT_LEDPOL; ledPolarity =false;} // options:0 = ledPolarity 
-	
-	saveDeviceSettings(g_device);	
+	else
+	{g_device->options &= NT_LEDPOL; ledPolarity =false;} // options:0 = ledPolarity
+
+	saveDeviceSettings(g_device);
 	sysledpol((char*) "");
 }
 
@@ -1074,14 +1074,14 @@ void tzoffset(char* s)
 		return;
 	}
 	char *t_end  = strstr(t, parquoteslash);
-    if(t_end == NULL)
-    {
+	if(t_end == NULL)
+	{
 		kprintf(stritCMDERROR);
 		return;
-    }	
+	}
 	uint8_t value = atoi(t+2);
-	g_device->tzoffset = value;	
-	saveDeviceSettings(g_device);	
+	g_device->tzoffset = value;
+	saveDeviceSettings(g_device);
 	tzoffset((char*) "");
 	addonDt(); // for addon, force the dt fetch
 }
@@ -1102,8 +1102,8 @@ void setHostname(char* s)
 		ESP_ERROR_CHECK(mdns_hostname_set(s));
 		ESP_ERROR_CHECK(mdns_instance_name_set(s));
 		vTaskDelay(10);
-		ESP_ERROR_CHECK(mdns_service_add(NULL, "_http", "_tcp", 80, NULL, 0));	
-		ESP_ERROR_CHECK(mdns_service_add(NULL, "_telnet", "_tcp", 23, NULL, 0));	
+		ESP_ERROR_CHECK(mdns_service_add(NULL, "_http", "_tcp", 80, NULL, 0));
+		ESP_ERROR_CHECK(mdns_service_add(NULL, "_telnet", "_tcp", 23, NULL, 0));
 }
 
 //display or change the hostname and services
@@ -1115,24 +1115,24 @@ void hostname(char* s)
 		kprintf("##SYS.HOST#: %s.local\n  IP:%s #\n",g_device->hostname,getIp());
 		return;
 	}
-	
+
 	t +=2;
 	char *t_end  = strstr(t, parquoteslash);
-    if(t_end == NULL)
-    {
+	if(t_end == NULL)
+	{
 		kprintf(stritCMDERROR);
 		return;
-    }
+	}
 
 	if (t_end-t ==0)
 		strcpy(	g_device->hostname, "karadio32");
 	else
-	{	
+	{
 		if (t_end-t >= HOSTLEN) t_end = t+HOSTLEN;
 		strncpy(g_device->hostname,t,(t_end-t)*sizeof(char));
 		g_device->hostname[(t_end-t)*sizeof(char)] = 0;
 	}
-	saveDeviceSettings(g_device);	
+	saveDeviceSettings(g_device);
 	setHostname(g_device->hostname);
 	hostname((char*) "");
 }
@@ -1159,7 +1159,7 @@ void displayLogLevel()
 		  kprintf("Log level is now ESP_LOG_VERBOSE\n");
 		  break;
 		default:
-		  kprintf("Log level is now Unknonwn\n");	
+		  kprintf("Log level is now Unknonwn\n");
 	}
 }
 
@@ -1172,11 +1172,11 @@ esp_log_level_t getLogLevel()
 void setLogLevel(esp_log_level_t level)
 {
 	esp_log_level_set("*", level);
-	s_log_default_level=level; 
+	s_log_default_level=level;
 	g_device->trace_level = level;
 	saveDeviceSettings(g_device);
 	displayLogLevel();
-} 
+}
 
 /*
 void fmSeekUp()
@@ -1203,7 +1203,7 @@ void sys_conf()
 		free (label);
 	} else kprintf("no label\n");
 	gpio_get_comment(&label);
-	
+
 	kprintf("#COMMENT: ");
 	if (label != NULL)
 	{
@@ -1223,18 +1223,18 @@ void checkCommand(int size, char* s)
 	{
 		if(strcmp(tmp+3, "up") == 0) 	fmSeekUp();
 		else if(strcmp(tmp+3, "down") == 0) 	fmSeekDown();
-		else if(strcmp(tmp+3, "stop") == 0) 	fmMute(); 
-		else if(strcmp(tmp+3, "start") == 0) 	fmUnmute(); 
-		else if(startsWith (  "vol",tmp+3)) 	clientVol(tmp);	
+		else if(strcmp(tmp+3, "stop") == 0) 	fmMute();
+		else if(strcmp(tmp+3, "start") == 0) 	fmUnmute();
+		else if(startsWith (  "vol",tmp+3)) 	clientVol(tmp);
 		else printInfo(tmp);
 	} else
-*/		
+*/
 	if(startsWith ("dbg.", tmp))
 	{
 		if     (strcmp(tmp+4, "fifo") == 0) 	kprintf( "Buffer fill %u%%, %d bytes, OverRun: %ld, UnderRun: %ld\n",
 												(spiRamFifoFill() * 100) / spiRamFifoLen(), spiRamFifoFill(),spiRamGetOverrunCt(),spiRamGetUnderrunCt());
 		else if(strcmp(tmp+4, "clear") == 0) 	spiRamFifoReset();
-		
+
 		else printInfo(tmp);
 	} else
 	if(startsWith ("wifi.", tmp))
@@ -1289,11 +1289,11 @@ void checkCommand(int size, char* s)
 		else if(strncmp(tmp+4, "vers",4) == 0) 	kprintf("Release: %s, Revision: %s, KaRadio32\n",RELEASE,REVISION);
 		else if(startsWith(   "tzo",tmp+4)) 	tzoffset(tmp);
 		else if(strcmp(tmp+4, "logn") == 0) 	setLogLevel(ESP_LOG_NONE);
-		else if(strcmp(tmp+4, "loge") == 0) 	setLogLevel(ESP_LOG_ERROR); 
-		else if(strcmp(tmp+4, "logw") == 0) 	setLogLevel(ESP_LOG_WARN); 
-		else if(strcmp(tmp+4, "logi") == 0) 	setLogLevel(ESP_LOG_INFO); 
-		else if(strcmp(tmp+4, "logd") == 0) 	setLogLevel(ESP_LOG_DEBUG); 
-		else if(strcmp(tmp+4, "logv") == 0) 	setLogLevel(ESP_LOG_VERBOSE); 
+		else if(strcmp(tmp+4, "loge") == 0) 	setLogLevel(ESP_LOG_ERROR);
+		else if(strcmp(tmp+4, "logw") == 0) 	setLogLevel(ESP_LOG_WARN);
+		else if(strcmp(tmp+4, "logi") == 0) 	setLogLevel(ESP_LOG_INFO);
+		else if(strcmp(tmp+4, "logd") == 0) 	setLogLevel(ESP_LOG_DEBUG);
+		else if(strcmp(tmp+4, "logv") == 0) 	setLogLevel(ESP_LOG_VERBOSE);
 		else if(strcmp(tmp+4, "dlog") == 0) 	displayLogLevel();
 		else if(strncmp(tmp+4, "cali",4) == 0) 	xpt_calibrate();
 		else if(startsWith(   "log",tmp+4)) 	; // do nothing
@@ -1306,7 +1306,7 @@ void checkCommand(int size, char* s)
 		else if(startsWith (  "henc1",tmp+4)) 	syshenc(1,tmp);
 		else printInfo(tmp);
 	}
-	else 
+	else
 	{
 		if(strcmp(tmp, "help") == 0)
 		{
@@ -1320,7 +1320,7 @@ void checkCommand(int size, char* s)
 			vTaskDelay(1);
 			kprintfl(stritHELP4);		}
 		else printInfo(tmp);
-	}	
+	}
 	free(tmp);
-	
+
 }

@@ -49,13 +49,13 @@ uint8_t getRotat();
 void setHostname(char* s);
 
 #define kprintf(fmt, ...) do {    \
-        printf(fmt, ##__VA_ARGS__);   \
+		printf(fmt, ##__VA_ARGS__);   \
 		telnetWrite(2*MAXDATAT,fmt, ##__VA_ARGS__); \
 		addonParse(fmt, ##__VA_ARGS__);\
 	} while (0)
 
 #define kprintfl(fmt, ...) do {    \
-        printf(fmt, ##__VA_ARGS__);   \
+		printf(fmt, ##__VA_ARGS__);   \
 		telnetWrite(1024,fmt, ##__VA_ARGS__); \
 		addonParse(fmt, ##__VA_ARGS__);\
 	} while (0)
