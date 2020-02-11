@@ -35,7 +35,7 @@
 extern void  LoadUserCodes(void);
 
 #define TAG "vs1053"
-
+#define VSTASKBUF 1024
 
 int vsVersion = -1; // the version of the chip
 //	SS_VER is 0 for VS1001, 1 for VS1011, 2 for VS1002, 3 for VS1003, 4 for VS1053 and VS8053, 5 for VS1033, 7 for VS1103, and 6 for VS1063.
@@ -301,7 +301,7 @@ void VS1053_I2SRate(uint8_t speed){ // 0 = 48kHz, 1 = 96kHz, 2 = 128kHz
 	VS1053_WriteRegister16(SPI_WRAM, 0x0008|speed); //
 	VS1053_WriteRegister16(SPI_WRAMADDR, 0xc040); //address of GPIO_ODATA is 0xC017
 	VS1053_WriteRegister16(SPI_WRAM, 0x000C|speed); //
-	ESP_LOGI(TAG,"I2S Speed: %d",speed);
+	ESP_LOGI(TAG,"I2S Speed: %d", speed);
 }
 void VS1053_DisableAnalog(){
 	// disable analog output
@@ -652,10 +652,10 @@ void VS1053_flush_cancel(uint8_t mode) {  // 0 only fillbyte  1 before play    2
   }
 }
 
-
 //IRAM_ATTR
 void vsTask(void *pvParams) {
-#define VSTASKBUF	1024
+	// ESP_LOGI(TAG, "%s task: %x","serversTask", (unsigned int) pxCreatedTask);
+	ESP_LOGI(TAG, "Starting %s task", "vsTask");
 	portBASE_TYPE uxHighWaterMark;
 	uint8_t  b[VSTASKBUF];
 	uint16_t size ,s;

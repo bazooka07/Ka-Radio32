@@ -237,61 +237,55 @@ void option_get_lcd_out(uint32_t *enca)
 	// init default
 		*enca = g_device->lcd_out;
 
-	if (open_partition(hardware, option_space,NVS_READONLY,&hardware_handle)!= ESP_OK)
-	{
+	if (open_partition(hardware, option_space,NVS_READONLY,&hardware_handle)!= ESP_OK) {
 		ESP_LOGD(TAG,"in lcd_out");
 		return;
 	}
 
 	err = nvs_get_u32(hardware_handle, "O_LCD_OUT",(uint32_t *) &lout);
-	if (err != ESP_OK) ESP_LOGD(TAG,"oget_lcd_out err 0x%x",err);
-	else
-	{
-		if (lout == 255) lout = 0; // special case
+	if (err != ESP_OK) {
+		ESP_LOGD(TAG,"oget_lcd_out err 0x%x",err);
+	} else {
+		if (lout == 255)
+			lout = 0; // special case
 		*enca = lout;
 	}
 	close_partition(hardware_handle,hardware);
 }
-void option_set_lcd_out(uint32_t enca)
-{
-	esp_err_t err;
+
+void option_set_lcd_out(uint32_t enca) {
 	nvs_handle hardware_handle;
 
-	if (open_partition(hardware, option_space,NVS_READWRITE,&hardware_handle)!= ESP_OK)
-	{
+	if (open_partition(hardware, option_space, NVS_READWRITE, &hardware_handle)!= ESP_OK)	{
 		ESP_LOGD(TAG,"in set_lcd_out");
 		return;
 	}
 
-	err = nvs_set_u32(hardware_handle, "O_LCD_OUT",enca);
-	if (err != ESP_OK) ESP_LOGD(TAG,"oset_lcd_out err 0x%x",err);
+	esp_err_t err = nvs_set_u32(hardware_handle, "O_LCD_OUT", enca);
+	if (err != ESP_OK) {
+		ESP_LOGD(TAG,"oset_lcd_out err 0x%x", err);
+	}
 
 	close_partition(hardware_handle,hardware);
 }
 
-
-
-void gpio_get_ledgpio(gpio_num_t *enca)
-{
-	esp_err_t err;
+void gpio_get_ledgpio(gpio_num_t *enca) {
 	nvs_handle hardware_handle;
 	// init default
 	*enca = g_device->led_gpio;
 
-	if (open_partition(hardware, gpio_space,NVS_READONLY,&hardware_handle)!= ESP_OK)
-	{
+	if (open_partition(hardware, gpio_space,NVS_READONLY,&hardware_handle)!= ESP_OK) {
 		ESP_LOGD(TAG,"in ledgpio");
 		return;
 	}
 
-	err = nvs_get_u8(hardware_handle, "P_LED_GPIO",(uint8_t *) enca);
+	esp_err_t err = nvs_get_u8(hardware_handle, "P_LED_GPIO",(uint8_t *) enca);
 	if (err != ESP_OK) ESP_LOGD(TAG,"g_get_ledgpio err 0x%x",err);
 
 	close_partition(hardware_handle,hardware);
 }
 
-void gpio_set_ledgpio(gpio_num_t enca)
-{
+void gpio_set_ledgpio(gpio_num_t enca) {
 	esp_err_t err;
 	nvs_handle hardware_handle;
 

@@ -221,7 +221,8 @@ void in_welcome(const char* ip,const char*state,int y,char* Version)
 void lcd_welcome(const char* ip,const char*state)
 {
 char Version[20];
-	sprintf(Version,"Version %s R%s\n",RELEASE,REVISION);
+	esp_app_desc_t* app_descr = get_app_desc();
+	sprintf(Version,"Version %s\n", app_descr->version);
 	if (lcd_type == LCD_NONE) return;
 	if ((strlen(ip)==0)&&(strlen(state)==0)) ClearBuffer();
 	if (isColor)
@@ -252,8 +253,7 @@ IRAM_ATTR  void ServiceAddon(void)
 {
 	timer1s++;
 	timerScroll++;
-	if (timer1s >=1000)
-	{
+	if (timer1s >=1000) {
 		// Time compute
 		timestamp++;  // time update
 		if (timerLcdOut >0) timerLcdOut--; //
@@ -301,9 +301,7 @@ void Screen(typeScreen st){
   {
 	mTscreen = MTNEW;
 	wakeLcd();
-  }
-  else
-  {
+  } else {
 	if (mTscreen == MTNODISPLAY) mTscreen = MTREFRESH;
   }
 
@@ -407,25 +405,23 @@ void drawScreen()
 {
 //  if (lcd_type == LCD_NONE) return;
 //  ESP_LOGW(TAG,"stateScreen: %d, mTscreen: %d",stateScreen,mTscreen);
-  if ((mTscreen != MTNODISPLAY)&&(!itLcdOut))
-  {
-	switch (stateScreen)
-	{
-	case smain:  //
-	 drawFrame();
-	  break;
+  if ((mTscreen != MTNODISPLAY)&&(!itLcdOut)) {
+	switch (stateScreen) {
+		case smain:  //
+		drawFrame();
+		break;
 	case svolume:
-	  drawVolume();
-	  break;
+		drawVolume();
+		break;
 	case sstation:
-	  drawStation();
-	  break;
+		drawStation();
+		break;
 	case stime:
-	  drawTime();
-	  break;
+		drawTime();
+		break;
 	case snumber:
-	  drawNumber();
-	  break;
+		drawNumber();
+		break;
 	default:
 	  Screen(defaultStateScreen);
 //	  drawFrame();

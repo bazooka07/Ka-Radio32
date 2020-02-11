@@ -20,8 +20,6 @@ Copyright (C) 2017  KaraWin
 
 #define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
 
-
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -99,8 +97,9 @@ const int CONNECTED_AP  = 0x00000010;
 #define PRIO_CONNECT configMAX_PRIORITIES -1
 #define striWATERMARK  "watermark: %d  heap: %d"
 
-void start_network();
+// void start_network();
 void autoPlay();
+
 /* */
 static bool wifiInitDone = false;
 static EventGroupHandle_t wifi_event_group ;
@@ -323,90 +322,76 @@ static void init_hardware()
 
 
 /* event handler for pre-defined wifi events */
-static esp_err_t event_handler(void *ctx, system_event_t *event)
-{
+static esp_err_t event_handler(void *ctx, system_event_t *event) {
 	EventGroupHandle_t wifi_event = ctx;
+	switch (event->event_id) {
+		case SYSTEM_EVENT_STA_START:
+			FlashOn = FlashOff = 100;
+			esp_wifi_connect();
+			break;
 
-	switch (event->event_id)
-	{
-	case SYSTEM_EVENT_STA_START:
-		FlashOn = FlashOff = 100;
-		esp_wifi_connect();
-		break;
-
-	case SYSTEM_EVENT_STA_CONNECTED:
-		xEventGroupSetBits(wifi_event, CONNECTED_AP);
-		ESP_LOGI(TAG, "Wifi connected");
-		if (wifiInitDone)
-		{
-			clientSaveOneHeader("Wifi Connected.",18,METANAME);
-			vTaskDelay(1000);
-			autoPlay();
+		case SYSTEM_EVENT_STA_CONNECTED:
+			xEventGroupSetBits(wifi_event, CONNECTED_AP);
+			ESP_LOGI(TAG, "Wifi connected");
+			if (wifiInitDone) {
+				clientSaveOneHeader("Wifi Connected.",18,METANAME);
+				vTaskDelay(1000);
+				autoPlay();
 			} // retry
-		else wifiInitDone = true;		break;
+			else wifiInitDone = true;		break;
 
-	case SYSTEM_EVENT_STA_GOT_IP:
-		FlashOn = 5;FlashOff = 395;
-		xEventGroupSetBits(wifi_event, CONNECTED_BIT);
-		break;
+		case SYSTEM_EVENT_STA_GOT_IP:
+			FlashOn = 5;FlashOff = 395;
+			xEventGroupSetBits(wifi_event, CONNECTED_BIT);
+			break;
 
-	case SYSTEM_EVENT_STA_DISCONNECTED:
-		/* This is a workaround as ESP32 WiFi libs don't currently
-		   auto-reassociate. */
-		FlashOn = FlashOff = 100;
-		xEventGroupClearBits(wifi_event, CONNECTED_AP);
-		xEventGroupClearBits(wifi_event, CONNECTED_BIT);
-		ESP_LOGE(TAG, "Wifi Disconnected.");
-		vTaskDelay(100);
-		if (!getAutoWifi()&&(wifiInitDone))
-		{
-			ESP_LOGE(TAG, "reboot");
+		case SYSTEM_EVENT_STA_DISCONNECTED:
+			/* This is a workaround as ESP32 WiFi libs don't currently
+			   auto-reassociate. */
+			FlashOn = FlashOff = 100;
+			xEventGroupClearBits(wifi_event, CONNECTED_AP);
+			xEventGroupClearBits(wifi_event, CONNECTED_BIT);
+			ESP_LOGE(TAG, "Wifi Disconnected.");
 			vTaskDelay(100);
-			esp_restart();
-		} else
-		{
-			if (wifiInitDone) // a completed init done
-			{
-				ESP_LOGE(TAG, "Connection tried again");
-//				clientDisconnect("Wifi Disconnected.");
-				clientSilentDisconnect();
+			if (!getAutoWifi()&&(wifiInitDone)) {
+				ESP_LOGE(TAG, "reboot");
 				vTaskDelay(100);
-				clientSaveOneHeader("Wifi Disconnected.",18,METANAME);
-				vTaskDelay(100);
-				while (esp_wifi_connect() == ESP_ERR_WIFI_SSID) vTaskDelay(10);
-			} else
-			{
-				ESP_LOGE(TAG, "Try next AP");
-				vTaskDelay(100);
-			} // init failed?
-		}
-		break;
+				esp_restart();
+			} else {
+				if (wifiInitDone) { // a completed init done
+					ESP_LOGE(TAG, "Connection tried again");
+					// clientDisconnect("Wifi Disconnected.");
+					clientSilentDisconnect();
+					vTaskDelay(100);
+					clientSaveOneHeader("Wifi Disconnected.",18,METANAME);
+					vTaskDelay(100);
+					while (esp_wifi_connect() == ESP_ERR_WIFI_SSID)
+						vTaskDelay(10);
+				} else {
+					ESP_LOGE(TAG, "Try next AP");
+					vTaskDelay(100);
+				} // init failed?
+			}
+			break;
 
-	case SYSTEM_EVENT_AP_START:
-		FlashOn = 5;FlashOff = 395;
-		xEventGroupSetBits(wifi_event, CONNECTED_AP);
-		xEventGroupSetBits(wifi_event, CONNECTED_BIT);
-		wifiInitDone = true;
-		break;
+		case SYSTEM_EVENT_AP_START:
+			FlashOn = 5;FlashOff = 395;
+			xEventGroupSetBits(wifi_event, CONNECTED_AP);
+			xEventGroupSetBits(wifi_event, CONNECTED_BIT);
+			wifiInitDone = true;
+			break;
 
-	case SYSTEM_EVENT_AP_STADISCONNECTED:
-		break;
-
-	default:
-		break;
+		default:
+			break;
 	}
 	return ESP_OK;
 }
 
-
-static void unParse(char* str)
-{
-	int i ;
+static void unParse(char* str) {
 	if (str == NULL) return;
-	for (i=0; i< strlen(str);i++)
-	{
-		if (str[i] == '\\')
-		{
+
+	for (int i=0; i< strlen(str);i++) {
+		if (str[i] == '\\') {
 			str[i] = str[i+1];
 			str[i+1]=0;
 			if (str[i+2] !=0)strcat(str, str+i+2);
@@ -414,15 +399,13 @@ static void unParse(char* str)
 	}
 }
 
-
-
 static void start_wifi() {
 	ESP_LOGI(TAG, "starting wifi");
 	setAutoWifi();
 
 	tcpip_adapter_init();
 	wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
-	ESP_ERROR_CHECK( esp_wifi_init(&cfg) );
+	ESP_ERROR_CHECK(esp_wifi_init(&cfg));
 	// ESP_ERROR_CHECK( esp_wifi_set_storage(WIFI_STORAGE_RAM) );
 
 	tcpip_adapter_dhcpc_stop(TCPIP_ADAPTER_IF_STA); // Don't run a DHCP client
@@ -495,8 +478,6 @@ static void start_wifi() {
 
 			vTaskDelay(1);
 			ESP_ERROR_CHECK( esp_wifi_start() );
-
-			audio_output_mode = I2S;
 		} else {
 			printf("WIFI TRYING TO CONNECT TO SSID %d\n", g_device->current_ap);
 			wifi_config_t wifi_config = {
@@ -542,6 +523,8 @@ static void start_wifi() {
 			break;
 		}
 	}
+
+	// audio_output_mode = I2S;
 }
 
 void start_network(){
@@ -970,7 +953,8 @@ void app_main()
 
 
 	// Version infos
-	ESP_LOGI(TAG, "Release %s, Revision %s",RELEASE,REVISION);
+	esp_app_desc_t* app_descr = get_app_desc();
+	ESP_LOGI(TAG, "Release %s", app_descr->version);
 	ESP_LOGI(TAG, "SDK %s",esp_get_idf_version());
 	ESP_LOGI(TAG, "Heap size: %d",xPortGetFreeHeapSize());
 

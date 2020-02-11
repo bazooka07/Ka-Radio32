@@ -193,7 +193,7 @@ unsigned short adcdiv;
 uint8_t startsWith(const char *pre, const char *str)
 {
 	size_t lenpre = strlen(pre),
-		   lenstr = strlen(str);
+		lenstr = strlen(str);
 	return lenstr < lenpre ? false : strncmp(pre, str, lenpre) == 0;
 }
 
@@ -218,7 +218,7 @@ void printInfo(char* s)
 
 const char htitle []  = {"\
 =============================================================================\n \
-			 SSID                   |    RSSI    |           AUTH            \n\
+             SSID                   |    RSSI    |           AUTH            \n\
 =============================================================================\n\
 "};
 const char hscan1 []  = {"#WIFI.SCAN#\n Number of access points found: %d\n"};
@@ -229,10 +229,10 @@ void wifiScan()
 uint16_t number;
 wifi_ap_record_t *records;
 wifi_scan_config_t config = {
-	  .ssid = NULL,
-	  .bssid = NULL,
-	  .channel = 0,
-	  .show_hidden = true
+	.ssid = NULL,
+	.bssid = NULL,
+	.channel = 0,
+	.show_hidden = true
 };
 
 	config.scan_type = WIFI_SCAN_TYPE_PASSIVE;
@@ -245,34 +245,34 @@ wifi_scan_config_t config = {
 	kprintf(hscan1,number);
 	if (number == 0) {
 		free (records);
-		 return ;
+		return ;
 	}
 	int i;
 	kprintf(htitle);
 
 	for (i=0; i<number; i++) {
-		 char *authmode;
-		 switch(records[i].authmode) {
+		char *authmode;
+		switch(records[i].authmode) {
 			case WIFI_AUTH_OPEN:
-			   authmode = (char*)"WIFI_AUTH_OPEN";
-			   break;
+				authmode = (char*)"WIFI_AUTH_OPEN";
+				break;
 			case WIFI_AUTH_WEP:
-			   authmode = (char*)"WIFI_AUTH_WEP";
-			   break;
+				authmode = (char*)"WIFI_AUTH_WEP";
+				break;
 			case WIFI_AUTH_WPA_PSK:
-			   authmode = (char*)"WIFI_AUTH_WPA_PSK";
-			   break;
+				authmode = (char*)"WIFI_AUTH_WPA_PSK";
+				break;
 			case WIFI_AUTH_WPA2_PSK:
-			   authmode = (char*)"WIFI_AUTH_WPA2_PSK";
-			   break;
+				authmode = (char*)"WIFI_AUTH_WPA2_PSK";
+				break;
 			case WIFI_AUTH_WPA_WPA2_PSK:
-			   authmode = (char*)"WIFI_AUTH_WPA_WPA2_PSK";
-			   break;
+				authmode = (char*)"WIFI_AUTH_WPA_WPA2_PSK";
+				break;
 			default:
-			   authmode = (char*)"Unknown";
-			   break;
-		 }
-		 kprintf("%32.32s    |    % 4d    |    %22.22s\n",records[i].ssid, records[i].rssi, authmode);
+				authmode = (char*)"Unknown";
+				break;
+		}
+		kprintf("%32.32s    |    % 4d    |    %22.22s\n",records[i].ssid, records[i].rssi, authmode);
 	}
 	kprintf("##WIFI.SCAN#: DONE\n");
 
@@ -405,8 +405,7 @@ void clientParseUrl(char* s)
 	t_end -= 2;
 
 	char *url = (char*) malloc((t_end-t+1)*sizeof(char));
-	if(url != NULL)
-	{
+	if(url != NULL) {
 		uint8_t tmp;
 		for(tmp=0; tmp<(t_end-t+1); tmp++) url[tmp] = 0;
 		strncpy(url, t+2, (t_end-t));
@@ -460,8 +459,7 @@ void clientParsePort(char *s)
 	t_end -= 2;
 
 	char *port = (char*) malloc((t_end-t+1)*sizeof(char));
-	if(port != NULL)
-	{
+	if(port != NULL) {
 		uint8_t tmp;
 		for(tmp=0; tmp<(t_end-t+1); tmp++) port[tmp] = 0;
 		strncpy(port, t+2, (t_end-t));
@@ -489,8 +487,7 @@ void clientPlay(char *s)
 	t_end -= 2;
 
 	char *id = (char*) malloc((t_end-t+1)*sizeof(char));
-	if(id != NULL)
-	{
+	if(id != NULL) {
 		uint8_t tmp;
 		for(tmp=0; tmp<(t_end-t+1); tmp++) id[tmp] = 0;
 		strncpy(id, t+2, (t_end-t));
@@ -687,14 +684,12 @@ char* webList(int id)
 void sysI2S(char* s)
 {
 	char *t = strstr(s, parslashquote);
-	if(t == NULL)
-	{
+	if(t == NULL) {
 		kprintf("##I2S speed of the vs1053: %d, 0=48kHz, 1=96kHz, 2=192kHz#\n",g_device->i2sspeed);
 		return;
 	}
 	char *t_end  = strstr(t, parquoteslash);
-	if(t_end == NULL)
-	{
+	if(t_end == NULL) {
 		kprintf(stritCMDERROR);
 		return;
 	}
@@ -748,15 +743,13 @@ void clientVol(char *s)
 		return;
 	}
 	char *t_end  = strstr(t, parquoteslash)-2;
-	if(t_end <= (char*) 0)
-	{
+	if(t_end <= (char*) 0) {
 
 		kprintf(stritCMDERROR);
 		return;
 	}
    char *vol = (char*) malloc((t_end-t+1)*sizeof(char));
-	if (vol != NULL)
-	{
+	if (vol != NULL) {
 		uint8_t tmp;
 		for(tmp=0; tmp<(t_end-t+1); tmp++) vol[tmp] = 0;
 		strncpy(vol, t+2, (t_end-t));
@@ -770,8 +763,7 @@ void clientVol(char *s)
 }
 
 // option for loading or not the pacth of the vs1053
-void syspatch(char* s)
-{
+void syspatch(char* s) {
 	char *t = strstr(s, parslashquote);
 	if(t == NULL)
 	{
@@ -782,8 +774,7 @@ void syspatch(char* s)
 		return;
 	}
 	char *t_end  = strstr(t, parquoteslash);
-	if(t_end == NULL)
-	{
+	if(t_end == NULL) {
 		kprintf(stritCMDERROR);
 		return;
 	}
@@ -798,8 +789,7 @@ void syspatch(char* s)
 }
 
 // the gpio to use for the led indicator
-void sysledgpio(char* s)
-{
+void sysledgpio(char* s) {
 	char *t = strstr(s, parslashquote);
 	if(t == NULL)
 	{
@@ -808,8 +798,7 @@ void sysledgpio(char* s)
 	}
 	char *t_end  = strstr(t, parquoteslash);
 	uint8_t value = atoi(t+2);
-	if ((t_end == NULL)||(value >= GPIO_NUM_MAX))
-	{
+	if ((t_end == NULL)||(value >= GPIO_NUM_MAX)) {
 		kprintf(stritCMDERROR);
 		return;
 	}
@@ -844,15 +833,13 @@ uint8_t getLedGpio()
 void syslcd(char* s)
 {
 	char *t = strstr(s, parslashquote);
-	if(t == NULL)
-	{
+	if(t == NULL) {
 		kprintf("##LCD is %d#\n",g_device->lcd_type);
 		kprintf("##LCD Width %d, Height %d#\n",GetWidth(),GetHeight());
 		return;
 	}
 	char *t_end  = strstr(t, parquoteslash);
-	if(t_end == NULL)
-	{
+	if(t_end == NULL) {
 		kprintf(stritCMDERROR);
 		return;
 	}
@@ -864,8 +851,7 @@ void syslcd(char* s)
 }
 
 // display or change the DDMM display mode
-void sysddmm(char* s)
-{
+void sysddmm(char* s) {
 	char *t = strstr(s, parslashquote);
 
 	if(t == NULL)
@@ -878,8 +864,7 @@ void sysddmm(char* s)
 		return;
 	}
 	char *t_end  = strstr(t, parquoteslash);
-	if(t_end == NULL)
-	{
+	if(t_end == NULL) {
 		kprintf(stritCMDERROR);
 		return;
 	}
@@ -895,8 +880,7 @@ void sysddmm(char* s)
 }
 
 // get or set the encoder half resolution. Must be set depending of the hardware
-void syshenc(int nenc,char* s)
-{
+void syshenc(int nenc,char* s) {
 	char *t = strstr(s, parslashquote);
 	Encoder_t *encoder;
 	bool encvalue;
@@ -942,12 +926,10 @@ void syshenc(int nenc,char* s)
 }
 
 // display or change the rotation lcd mode
-void sysrotat(char* s)
-{
+void sysrotat(char* s) {
 	char *t = strstr(s, parslashquote);
 
-	if(t == NULL)
-	{
+	if(t == NULL) {
 		kprintf("##Lcd rotation is ");
 		if (rotat)
 			kprintf("on#\n");
@@ -956,8 +938,7 @@ void sysrotat(char* s)
 		return;
 	}
 	char *t_end  = strstr(t, parquoteslash);
-	if(t_end == NULL)
-	{
+	if(t_end == NULL) {
 		kprintf(stritCMDERROR);
 		return;
 	}
@@ -1286,8 +1267,10 @@ void checkCommand(int size, char* s)
 		else if(startsWith (  "ledpol",tmp+4)) 	sysledpol(tmp);
 		else if(startsWith (  "led",tmp+4)) 	sysled(tmp);
 		else if(strcmp(tmp+4, "date") == 0) 	ntp_print_time();
-		else if(strncmp(tmp+4, "vers",4) == 0) 	kprintf("Release: %s, Revision: %s, KaRadio32\n",RELEASE,REVISION);
-		else if(startsWith(   "tzo",tmp+4)) 	tzoffset(tmp);
+		else if(strncmp(tmp+4, "vers",4) == 0) {
+			esp_app_desc_t* app_descr = get_app_desc();
+			kprintf("Release: %s, KaRadio32\n", app_descr->version);
+		} else if(startsWith(   "tzo",tmp+4)) 	tzoffset(tmp);
 		else if(strcmp(tmp+4, "logn") == 0) 	setLogLevel(ESP_LOG_NONE);
 		else if(strcmp(tmp+4, "loge") == 0) 	setLogLevel(ESP_LOG_ERROR);
 		else if(strcmp(tmp+4, "logw") == 0) 	setLogLevel(ESP_LOG_WARN);
@@ -1306,10 +1289,8 @@ void checkCommand(int size, char* s)
 		else if(startsWith (  "henc1",tmp+4)) 	syshenc(1,tmp);
 		else printInfo(tmp);
 	}
-	else
-	{
-		if(strcmp(tmp, "help") == 0)
-		{
+	else {
+		if(strcmp(tmp, "help") == 0) {
 			kprintfl(stritHELP0);
 			vTaskDelay(1);
 			kprintfl(stritHELP1);
@@ -1318,9 +1299,15 @@ void checkCommand(int size, char* s)
 			vTaskDelay(1);
 			kprintfl(stritHELP3);
 			vTaskDelay(1);
-			kprintfl(stritHELP4);		}
-		else printInfo(tmp);
+			kprintfl(stritHELP4);
+		} else {
+			printInfo(tmp);
+		}
 	}
 	free(tmp);
 
+}
+
+esp_app_desc_t* get_app_desc() {
+	return esp_ota_get_app_description();
 }
