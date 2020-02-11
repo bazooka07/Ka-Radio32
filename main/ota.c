@@ -244,7 +244,7 @@ void otaTask(void *pvParams) {
 								break;
 							}
 							ESP_LOGI(TAG, "esp_ota_begin succeeded");
-							wsUpgrade("starting", 0, 0);
+							wsUpgrade("starting", 0, content_length);
 							clientDisconnect("OTA");
 							image_header_was_checked = true;
 						}
@@ -263,7 +263,7 @@ void otaTask(void *pvParams) {
 			binary_file_length += data_read;
 			// ESP_LOGD(TAG, "Written image length : %d", binary_file_length);
 			ESP_LOGW(TAG, "Written image length : %d", binary_file_length);
-			wsUpgrade("downloading", binary_file_length, binary_file_length);
+			wsUpgrade("downloading", binary_file_length, content_length);
 			vTaskDelay(delay_loading);
 		} else { // data_read == 0
 			ESP_LOGI(TAG, "Connection closed.");
